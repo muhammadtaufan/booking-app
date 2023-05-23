@@ -28,3 +28,9 @@ bundle install
 ```sh
 rails s
 ```
+
+#### Run the test
+
+```sh
+rspec
+```
