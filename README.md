@@ -17,9 +17,14 @@ Rails version 7.0.4
 git clone https://github.com/muhammadtaufan/booking-app.git
 ```
 
-- Install dependencies
+- Install dependencies & Migration
+
 ```sh
 bundle install
+
+cp config/application.yml.sample config/application.yml
+
+rails db:migrate
 ```
 
 ### Usage
