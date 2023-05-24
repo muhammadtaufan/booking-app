@@ -15,7 +15,8 @@ class ApplicationController < ActionController::API
     render json: { success: false, message: message }, status: status
   end
 
-  def unhandled_process
-    json_error_response('Sorry unable to process your booking', :unprocessable_entity)
+  def unhandled_process(exception)
+    Rails.logger.error "Unhandled exception: #{exception.message}"
+    json_error_response(exception.message, :unprocessable_entity)
   end
 end
