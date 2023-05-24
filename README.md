@@ -17,6 +17,12 @@ Rails version 7.0.4
 git clone https://github.com/muhammadtaufan/booking-app.git
 ```
 
+- Run Postgresql via docker
+
+```sh
+docker run --name postgresql -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
+```
+
 - Install dependencies & Migration
 
 ```sh
@@ -24,7 +30,7 @@ bundle install
 
 cp config/application.yml.sample config/application.yml
 
-rails db:setup db:migrate
+rails db:create db:migrate
 ```
 
 ### Usage

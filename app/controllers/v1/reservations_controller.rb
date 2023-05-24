@@ -8,9 +8,9 @@ module V1
       reservation = service.create_reservation
 
       if reservation[:success]
-        json_success_response(nil, response[:status], response[:message])
+        json_success_response(nil, reservation[:status], reservation[:message])
       else
-        json_error_response(response[:message], response[:status])
+        json_error_response(reservation[:message], reservation[:status])
       end
     end
   end
