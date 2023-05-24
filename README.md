@@ -24,7 +24,7 @@ bundle install
 
 cp config/application.yml.sample config/application.yml
 
-rails db:migrate
+rails db:setup db:migrate
 ```
 
 ### Usage
