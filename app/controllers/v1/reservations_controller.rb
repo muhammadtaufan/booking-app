@@ -7,21 +7,32 @@ module V1
       booking_params = adapter.parse
 
       guest_params = booking_params[:guest_params]
-      guest = Guest.find_or_create_by!(email: guest_params[:email]) do |data|
-        data.firstname = guest_params[:firstname]
-        data.lastname = guest_params[:lastname]
-        data.phone = guest_params[:phone]
-      end
+      guest = create_guest(guest_params)
 
       reservation_params = booking_params[:reservation_params]
-      reservation = guest.reservations.find_or_initialize_by(reservation_code: reservation_params[:reservation_code])
-      reservation.update!(reservation_params)
+      reservation = create_reservation_with_guest(guest, reservation_params)
 
       if reservation
         render json: { message: 'Booking created', data: reservation }, status: :created
       else
         render json: { error: 'Partner not found' }, status: :bad_request
       end
+    end
+
+    private
+
+    def create_guest(guest_params)
+      Guest.find_or_create_by!(email: guest_params[:email]) do |data|
+        data.firstname = guest_params[:firstname]
+        data.lastname = guest_params[:lastname]
+        data.phone = guest_params[:phone]
+      end
+    end
+
+    def create_reservation_with_guest(guest, reservation_params)
+      reservation = guest.reservations.find_or_initialize_by(reservation_code: reservation_params[:reservation_code])
+      reservation.update!(reservation_params)
+      reservation
     end
   end
 end
