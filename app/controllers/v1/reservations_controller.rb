@@ -13,9 +13,9 @@ module V1
       reservation = create_reservation_with_guest(guest, reservation_params)
 
       if reservation
-        render json: { message: 'Booking created', data: reservation }, status: :created
+        json_success_response(nil, :created, 'Booking created')
       else
-        render json: { error: 'Partner not found' }, status: :bad_request
+        json_error_response(reservation.errors, :unprocessable_entity)
       end
     end
 
