@@ -54,6 +54,8 @@ rspec
 ```sh
 curl --location 'http://localhost:3000/v1/reservations' \
 --header 'Content-Type: application/json' \
+--header 'x-api-client: client' \
+--header 'x-api-secret: secret' \
 --data-raw '{
     "reservation_code": "YYY12345678",
     "start_date": "2021-04-14",
@@ -81,6 +83,8 @@ curl --location 'http://localhost:3000/v1/reservations' \
 ```sh
 curl --location 'http://localhost:3000/v1/reservations' \
 --header 'Content-Type: application/json' \
+--header 'x-api-client: client' \
+--header 'x-api-secret: secret' \
 --data-raw '{
     "reservation": {
         "code": "XXX12345678",

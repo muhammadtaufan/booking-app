@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::API
+  before_action :authenticate
+
   rescue_from NotImplementedError, with: :unhandled_process
   rescue_from ArgumentError, with: :unhandled_process
 
@@ -18,5 +20,19 @@ class ApplicationController < ActionController::API
   def unhandled_process(exception)
     Rails.logger.error "Unhandled exception: #{exception.message}"
     json_error_response(exception.message, :unprocessable_entity)
+  end
+
+  def handle_unauthorized
+    json_error_response('Invalid credentials', :unauthorized)
+  end
+
+  def authenticate
+    client_name = request.headers['X-API-CLIENT']
+    client_secret = request.headers['X-API-SECRET']
+
+    return handle_unauthorized if client_name.nil? || client_secret.nil?
+
+    client = Client.find_by(name: client_name)
+    handle_unauthorized if client.nil? || !ActiveSupport::SecurityUtils.secure_compare(client.secret, client_secret)
   end
 end
