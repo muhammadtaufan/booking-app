@@ -4,7 +4,7 @@ class ReservationAdapter
   end
 
   def parse
-    raise NotImplementedError, 'Each partner must implement its own #parse method'
+    raise MethodNotImplementedE, 'Each partner must implement its own #parse method'
   end
 
   def self.for_partner(params)
@@ -13,7 +13,7 @@ class ReservationAdapter
     elsif params.key?('reservation') && params['reservation']['code'].start_with?('XXX')
       AirbncAdapter.new(params)
     else
-      raise ArgumentError, 'No partner found for given payload'
+      raise InvalidPayload, 'No partner found for given payload'
     end
   end
 end
