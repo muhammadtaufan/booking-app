@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe V1::ReservationsController, type: :controller do
+  let(:client) { create(:client) }
+
   describe 'POST #create_reservation' do
     context 'when the reservation params is valid' do
       it 'returns a success response and create a new reservation and a new guest' do
@@ -25,6 +27,8 @@ RSpec.describe V1::ReservationsController, type: :controller do
           "security_price": '500',
           "total_price": '4700.00'
         }
+
+        request.headers.merge!(auth_headers(client))
         post :create_reservation, params: valid_params
 
         expect(response.status).to eq(201)
@@ -40,6 +44,7 @@ RSpec.describe V1::ReservationsController, type: :controller do
 
     context 'when the reservation params is invalid' do
       it 'returns a bad request' do
+        request.headers.merge!(auth_headers(client))
         post :create_reservation, params: { reservation: { code: 'AAA123' } }
 
         expect(response.status).to eq(422)
