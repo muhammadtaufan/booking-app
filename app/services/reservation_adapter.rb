@@ -4,7 +4,7 @@ class ReservationAdapter
   end
 
   def parse
-    raise MethodNotImplementedE, 'Each partner must implement its own #parse method'
+    raise MethodNotImplemented, 'Each partner must implement its own #parse method'
   end
 
   def self.for_partner(params)

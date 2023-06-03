@@ -1,8 +1,8 @@
 class ApplicationController < ActionController::API
   before_action :authenticate
 
-  rescue_from NotImplementedError, with: :unhandled_process
-  rescue_from ArgumentError, with: :unhandled_process
+  rescue_from MethodNotImplemented, with: :unhandled_process
+  rescue_from InvalidPayload, with: :unhandled_process
 
   def json_success_response(data = nil, status = :ok, message = nil)
     response_body = { success: true }

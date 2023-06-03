@@ -6,7 +6,6 @@ module RequestHelper
       headers['X-API-CLIENT'] = client.name
       headers['X-API-SECRET'] = client.secret
     end
-    p headers
     headers
   end
 end

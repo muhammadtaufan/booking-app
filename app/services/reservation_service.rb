@@ -1,40 +1,43 @@
 class ReservationService
+  attr_reader :params
+
   def initialize(params)
     @params = params
   end
 
-  def create_reservation
+  def create_new_reservation
     Rails.logger.info '[ReservationService][create_reservation]Creating reservation started'
+    execute if valid_params?
+  end
 
+  private
+
+  def valid_params?
+    guest.valid? && reservation.valid?
+  end
+
+  def guest
+    @guest = Guest.find_or_initialize_by(email: params[:guest_params][:email]) do |data|
+      data.assign_attributes(params[:guest_params])
+    end
+  end
+
+  def reservation
+    @reservation ||= Reservation.find_or_initialize_by(reservation_code: params[:reservation_params][:reservation_code]) do |record|
+      record.assign_attributes(params[:reservation_params].merge(guest: guest))
+    end
+  end
+
+  def execute
     ActiveRecord::Base.transaction do
-      guest = create_guest
-      reservation = create_reservation_with_guest(guest)
-
-      if reservation
-        { success: true, status: :created, message: 'Booking created' }
+      if reservation.save && guest.save
+        Rails.logger.info '[ReservationService][create_reservation] Reservation created successfully'
       else
-        Rails.logger.error '[ReservationService][create_reservation] Failed to create reservation'
         raise ActiveRecord::Rollback
       end
     end
   rescue ActiveRecord::Rollback
-    Rails.logger.error '[ReservationService][create_reservation] Rolling back transaction due to error'
-    { success: false, status: :unprocessable_entity, message: 'Failed to create reservation' }
-  end
-
-  def create_guest
-    guest_params = @params[:guest_params]
-    Guest.find_or_create_by!(email: guest_params[:email]) do |data|
-      data.firstname = guest_params[:firstname]
-      data.lastname = guest_params[:lastname]
-      data.phone = guest_params[:phone]
-    end
-  end
-
-  def create_reservation_with_guest(guest)
-    reservation_params = @params[:reservation_params]
-    reservation = guest.reservations.find_or_initialize_by(reservation_code: reservation_params[:reservation_code])
-    reservation.update!(reservation_params)
-    reservation
+    Rails.logger.error '[ReservationService][create_reservation] Failed to create reservation'
+    nil
   end
 end
