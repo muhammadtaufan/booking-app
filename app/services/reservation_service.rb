@@ -6,12 +6,10 @@ class ReservationService
   end
 
   def create_new_reservation
-    if reservation.new_record?
-      execute if valid_params?
-    else
-      raise ReservationAlreadyExists,
-            "Reservation with code #{reservation.reservation_code} already exists"
-    end
+    reservation.new_record? ? create_reservation : update_reservation
+  rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.error "[ReservationService][create_reservation] Failed to create reservation: #{e.record.errors.full_messages.join(', ')}"
+    nil
   end
 
   private
@@ -32,14 +30,32 @@ class ReservationService
     end
   end
 
-  def execute
+  def create_reservation
+    return unless valid_params?
+
     ActiveRecord::Base.transaction do
       guest.save!
       reservation.guest = guest
       reservation.save!
     end
-  rescue ActiveRecord::RecordInvalid => e
-    Rails.logger.error "[ReservationService][create_reservation] Failed to create reservation:#{e.record.errors.full_messages.join(', ')}"
-    nil
+  end
+
+  def update_reservation
+    updated_params = params[:reservation_params].reject do |k, v|
+      reservation_attribute = reservation.send(k)
+
+      if reservation_attribute.is_a? BigDecimal
+        reservation_attribute.to_f == v.to_f
+      else
+        reservation_attribute == v
+      end
+    end
+
+    unless updated_params.any?
+      Rails.logger.info "[ReservationService][update_reservation] Reservation with code #{reservation.reservation_code} already exists without any changes"
+      raise ReservationAlreadyExists,
+            "Reservation with code #{reservation.reservation_code} already exists without any changes"
+    end
+    reservation.update!(updated_params)
   end
 end

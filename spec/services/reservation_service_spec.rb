@@ -46,7 +46,12 @@ RSpec.describe ReservationService, type: :service do
 
   let(:existing_record_reservation) do
     instance_double(Reservation, valid?: true, assign_attributes: true, save!: false,
-                                 new_record?: false, reservation_code: 'YYY12345678').tap do |reservation|
+                                 new_record?: false, reservation_code: 'YYY12345678',
+                                 start_date: 'Wed, 14 Apr 2021', end_date: 'Sun, 18 Apr 2021',
+                                 night_count: 10, guest_count: 4, children_count: 2,
+                                 infant_count: 0, adult_count: 2, status: 'canceled',
+                                 currency: 'AUD', payout_price: '4200.00',
+                                 security_price: '500', total_price: '4700.00').tap do |reservation|
       allow(reservation).to receive(:guest=).with(guest)
     end
   end
@@ -85,7 +90,7 @@ RSpec.describe ReservationService, type: :service do
         expect do
           service.create_new_reservation
         end.to raise_error(ReservationAlreadyExists,
-                           'Reservation with code YYY12345678 already exists')
+                           'Reservation with code YYY12345678 already exists without any changes')
       end
     end
   end
