@@ -34,28 +34,58 @@ RSpec.describe ReservationService, type: :service do
   end
 
   let(:service) { described_class.new(valid_params) }
-  let(:guest) { instance_double(Guest, valid?: true, assign_attributes: true, save: true) }
-  let(:reservation) { instance_double(Reservation, valid?: true, assign_attributes: true, save: true) }
+  let(:guest) do
+    instance_double(Guest, valid?: true, assign_attributes: true, save: true, save!: true)
+  end
+  let(:new_record_reservation) do
+    instance_double(Reservation, valid?: true, assign_attributes: true, save: true, save!: true,
+                                 new_record?: true).tap do |reservation|
+      allow(reservation).to receive(:guest=).with(guest)
+    end
+  end
 
-  before do
-    allow(Guest).to receive(:find_or_initialize_by).and_return(guest)
-    allow(Reservation).to receive(:find_or_initialize_by).and_return(reservation)
+  let(:existing_record_reservation) do
+    instance_double(Reservation, valid?: true, assign_attributes: true, save!: false,
+                                 new_record?: false, reservation_code: 'YYY12345678').tap do |reservation|
+      allow(reservation).to receive(:guest=).with(guest)
+    end
   end
 
   describe '#create_reservation' do
-    context 'with valid params' do
-      it 'return true and create a new reservation' do
-        expect(service.create_new_reservation).to be_truthy
+    context 'with a new reservation' do
+      before do
+        allow(Guest).to receive(:find_or_initialize_by).and_return(guest)
+        allow(Reservation).to receive(:find_or_initialize_by).and_return(new_record_reservation)
+      end
+
+      context 'with valid params' do
+        it 'return true and create a new reservation' do
+          expect(service.create_new_reservation).to be_truthy
+        end
+      end
+
+      context 'when parameters are invalid' do
+        before do
+          allow(guest).to receive(:valid?).and_return(false)
+        end
+
+        it 'does not create a new reservation' do
+          expect(service.create_new_reservation).to be_nil
+        end
       end
     end
 
-    context 'when parameters are invalid' do
+    context 'with existing reservation code' do
       before do
-        allow(guest).to receive(:valid?).and_return(false)
+        allow(Guest).to receive(:find_or_initialize_by).and_return(guest)
+        allow(Reservation).to receive(:find_or_initialize_by).and_return(existing_record_reservation)
       end
 
-      it 'does not create a new reservation' do
-        expect(service.create_new_reservation).to be_nil
+      it 'return false and raise an exception' do
+        expect do
+          service.create_new_reservation
+        end.to raise_error(ReservationAlreadyExists,
+                           'Reservation with code YYY12345678 already exists')
       end
     end
   end

@@ -12,6 +12,8 @@ module V1
       else
         json_error_response('Unable to process the booking', :unprocessable_entity)
       end
+    rescue ActiveRecord::RecordInvalid, ReservationAlreadyExists => e
+      json_error_response(e.message, :unprocessable_entity)
     end
   end
 end

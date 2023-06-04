@@ -33,6 +33,7 @@ class ApplicationController < ActionController::API
     return handle_unauthorized if client_name.nil? || client_secret.nil?
 
     client = Client.find_by(name: client_name)
-    handle_unauthorized if client.nil? || !ActiveSupport::SecurityUtils.secure_compare(client.secret, client_secret)
+    return handle_unauthorized if client.nil? || !ActiveSupport::SecurityUtils.secure_compare(client.secret,
+                                                                                              client_secret)
   end
 end

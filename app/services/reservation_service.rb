@@ -6,8 +6,12 @@ class ReservationService
   end
 
   def create_new_reservation
-    Rails.logger.info '[ReservationService][create_reservation]Creating reservation started'
-    execute if valid_params?
+    if reservation.new_record?
+      execute if valid_params?
+    else
+      raise ReservationAlreadyExists,
+            "Reservation with code #{reservation.reservation_code} already exists"
+    end
   end
 
   private
@@ -30,14 +34,12 @@ class ReservationService
 
   def execute
     ActiveRecord::Base.transaction do
-      if reservation.save && guest.save
-        Rails.logger.info '[ReservationService][create_reservation] Reservation created successfully'
-      else
-        raise ActiveRecord::Rollback
-      end
+      guest.save!
+      reservation.guest = guest
+      reservation.save!
     end
-  rescue ActiveRecord::Rollback
-    Rails.logger.error '[ReservationService][create_reservation] Failed to create reservation'
+  rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.error "[ReservationService][create_reservation] Failed to create reservation:#{e.record.errors.full_messages.join(', ')}"
     nil
   end
 end
